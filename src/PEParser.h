@@ -3,8 +3,10 @@
 #include <iostream>
 #include <vector>
 #include <string>
-#include <phnt_windows.h>
-#include <phnt.h>
+#include <minwindef.h>
+#include <windef.h>
+#include <fileapi.h>
+#include <WinBase.h>
 
 ///
 /// File parsing status codes

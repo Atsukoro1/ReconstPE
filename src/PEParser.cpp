@@ -60,7 +60,7 @@ DWORD PEParser::from_disk(char* path)
 		&pe_file_size_read,
 		NULL
 	);
-	if (pe_file_read == NULL)
+	if (pe_file_read == 0)
 		return PE_FILE_READ_ERROR;
 
 	this->raw_pe_data = pe_file_buffer;
