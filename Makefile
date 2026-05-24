@@ -22,7 +22,6 @@ SRC := \
 	src/main.cpp \
 	src/PEParser.cpp \
 	src/Gui.cpp \
-	src/Formatting.cpp \
 	external/imgui/imgui.cpp \
 	external/imgui/imgui_draw.cpp \
 	external/imgui/imgui_tables.cpp \

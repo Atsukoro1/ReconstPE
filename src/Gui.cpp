@@ -17,7 +17,7 @@ void PrintTableRow2(char *key, char *value)
     ImGui::Text(value);
 }
 
-static bool BeginPEFieldTable(const char* id)
+static bool BeginPEFieldTable(const char *id, int columns)
 {
     ImGuiTableFlags flags =
         ImGuiTableFlags_Borders |
@@ -26,7 +26,7 @@ static bool BeginPEFieldTable(const char* id)
         ImGuiTableFlags_SizingStretchProp |
         ImGuiTableFlags_ScrollY;
 
-    if (!ImGui::BeginTable(id, 2, flags, ImVec2(0, 0)))
+    if (!ImGui::BeginTable(id, columns, flags, ImVec2(0, 0)))
         return false;
 
     ImGui::TableSetupColumn("Field", ImGuiTableColumnFlags_WidthFixed, 180.0f);
@@ -44,9 +44,7 @@ static void EndPEFieldTable()
 
 void RenderGeneralTable(PEParser &parser)
 {
-    ImGui::Text("General");
-
-    BeginPEFieldTable("General");
+    BeginPEFieldTable("General", 2);
     PrintTableRow2("Is 64 bit", (char *)(parser.is_64bit ? "true" : "false"));
     PrintTableRow2("File path", parser.path);
     EndPEFieldTable();
@@ -54,9 +52,7 @@ void RenderGeneralTable(PEParser &parser)
 
 void RenderDOSHeaderTable(PEParser &parser)
 {
-    ImGui::Text("DOS Header");
-
-    BeginPEFieldTable("DosHeaderTable");
+    BeginPEFieldTable("DosHeaderTable", 2);
     PrintTableRow2("e_cblp", Hex(parser.pe_dos_header->e_cblp));
     PrintTableRow2("e_cp", Hex(parser.pe_dos_header->e_cp));
     PrintTableRow2("e_cparhdr", Hex(parser.pe_dos_header->e_cparhdr));
@@ -79,23 +75,19 @@ void RenderDOSHeaderTable(PEParser &parser)
 
 void RenderFileHeaderTable(PEParser &parser)
 {
-    ImGui::Text("File Header");
-
-    BeginPEFieldTable("FileHeaderTable");
+    BeginPEFieldTable("FileHeaderTable", 2);
     PrintTableRow2("Characteristics", Hex(parser.pe_nt_headers->FileHeader.Characteristics));
     PrintTableRow2("Machine", Hex(parser.pe_nt_headers->FileHeader.Machine));
-    PrintTableRow2("Number of sections", Hex(parser.pe_nt_headers->FileHeader.NumberOfSections));
-    PrintTableRow2("Number of symbols", Hex(parser.pe_nt_headers->FileHeader.NumberOfSymbols));
+    PrintTableRow2("Number of sections", Decimal(parser.pe_nt_headers->FileHeader.NumberOfSections));
+    PrintTableRow2("Number of symbols", Decimal(parser.pe_nt_headers->FileHeader.NumberOfSymbols));
     PrintTableRow2("Pointer to symbol table", Hex(parser.pe_nt_headers->FileHeader.PointerToSymbolTable));
-    PrintTableRow2("Time Date stamp", Hex(parser.pe_nt_headers->FileHeader.TimeDateStamp));
+    PrintTableRow2("Time Date stamp", Decimal(parser.pe_nt_headers->FileHeader.TimeDateStamp));
     EndPEFieldTable();
 }
 
 void RenderOptionalHeaderTable(PEParser &parser)
 {
-    ImGui::Text("Optional Header");
-
-    BeginPEFieldTable("OptionalHeaderTable");
+    BeginPEFieldTable("OptionalHeaderTable", 2);
     PrintTableRow2("Entry point address", Hex(parser.pe_nt_headers->OptionalHeader.AddressOfEntryPoint));
     PrintTableRow2("Base of code", Hex(parser.pe_nt_headers->OptionalHeader.BaseOfCode));
     PrintTableRow2("Checksum", Hex(parser.pe_nt_headers->OptionalHeader.CheckSum));
@@ -104,25 +96,25 @@ void RenderOptionalHeaderTable(PEParser &parser)
     PrintTableRow2("Image base", Hex(parser.pe_nt_headers->OptionalHeader.ImageBase));
     PrintTableRow2("Loader flags", Hex(parser.pe_nt_headers->OptionalHeader.LoaderFlags));
     PrintTableRow2("Magic", Hex(parser.pe_nt_headers->OptionalHeader.Magic));
-    PrintTableRow2("Major image version", Hex(parser.pe_nt_headers->OptionalHeader.MajorImageVersion));
-    PrintTableRow2("Major linker version", Hex(parser.pe_nt_headers->OptionalHeader.MajorLinkerVersion));
-    PrintTableRow2("Major OS version", Hex(parser.pe_nt_headers->OptionalHeader.MajorOperatingSystemVersion));
-    PrintTableRow2("Major subsystem version", Hex(parser.pe_nt_headers->OptionalHeader.MajorSubsystemVersion));
-    PrintTableRow2("Miner image version", Hex(parser.pe_nt_headers->OptionalHeader.MinorImageVersion));
-    PrintTableRow2("Minor linker version", Hex(parser.pe_nt_headers->OptionalHeader.MinorLinkerVersion));
-    PrintTableRow2("Minor operating system version", Hex(parser.pe_nt_headers->OptionalHeader.MinorOperatingSystemVersion));
-    PrintTableRow2("Minor subsystem version", Hex(parser.pe_nt_headers->OptionalHeader.MinorSubsystemVersion));
-    PrintTableRow2("Number of RVA and sizes", Hex(parser.pe_nt_headers->OptionalHeader.NumberOfRvaAndSizes));
+    PrintTableRow2("Major image version", Decimal(parser.pe_nt_headers->OptionalHeader.MajorImageVersion));
+    PrintTableRow2("Major linker version", Decimal(parser.pe_nt_headers->OptionalHeader.MajorLinkerVersion));
+    PrintTableRow2("Major OS version", Decimal(parser.pe_nt_headers->OptionalHeader.MajorOperatingSystemVersion));
+    PrintTableRow2("Major subsystem version", Decimal(parser.pe_nt_headers->OptionalHeader.MajorSubsystemVersion));
+    PrintTableRow2("Miner image version", Decimal(parser.pe_nt_headers->OptionalHeader.MinorImageVersion));
+    PrintTableRow2("Minor linker version", Decimal(parser.pe_nt_headers->OptionalHeader.MinorLinkerVersion));
+    PrintTableRow2("Minor operating system version", Decimal(parser.pe_nt_headers->OptionalHeader.MinorOperatingSystemVersion));
+    PrintTableRow2("Minor subsystem version", Decimal(parser.pe_nt_headers->OptionalHeader.MinorSubsystemVersion));
+    PrintTableRow2("Number of RVA and sizes", Decimal(parser.pe_nt_headers->OptionalHeader.NumberOfRvaAndSizes));
     PrintTableRow2("Section alignment", Hex(parser.pe_nt_headers->OptionalHeader.SectionAlignment));
-    PrintTableRow2("Size of code", Hex(parser.pe_nt_headers->OptionalHeader.SizeOfCode));
-    PrintTableRow2("Size of headers", Hex(parser.pe_nt_headers->OptionalHeader.SizeOfHeaders));
-    PrintTableRow2("Size of heap commit", Hex(parser.pe_nt_headers->OptionalHeader.SizeOfHeapCommit));
-    PrintTableRow2("Size of heap reserve", Hex(parser.pe_nt_headers->OptionalHeader.SizeOfHeapReserve));
-    PrintTableRow2("Size of image", Hex(parser.pe_nt_headers->OptionalHeader.SizeOfImage));
-    PrintTableRow2("Size of initialized data", Hex(parser.pe_nt_headers->OptionalHeader.SizeOfInitializedData));
-    PrintTableRow2("Size of stack commit", Hex(parser.pe_nt_headers->OptionalHeader.SizeOfStackCommit));
-    PrintTableRow2("Size of stack reserve", Hex(parser.pe_nt_headers->OptionalHeader.SizeOfStackReserve));
-    PrintTableRow2("Size of uninitialized data", Hex(parser.pe_nt_headers->OptionalHeader.SizeOfUninitializedData));
+    PrintTableRow2("Size of code", Decimal(parser.pe_nt_headers->OptionalHeader.SizeOfCode));
+    PrintTableRow2("Size of headers", Decimal(parser.pe_nt_headers->OptionalHeader.SizeOfHeaders));
+    PrintTableRow2("Size of heap commit", Decimal(parser.pe_nt_headers->OptionalHeader.SizeOfHeapCommit));
+    PrintTableRow2("Size of heap reserve", Decimal(parser.pe_nt_headers->OptionalHeader.SizeOfHeapReserve));
+    PrintTableRow2("Size of image", Decimal(parser.pe_nt_headers->OptionalHeader.SizeOfImage));
+    PrintTableRow2("Size of initialized data", Decimal(parser.pe_nt_headers->OptionalHeader.SizeOfInitializedData));
+    PrintTableRow2("Size of stack commit", Decimal(parser.pe_nt_headers->OptionalHeader.SizeOfStackCommit));
+    PrintTableRow2("Size of stack reserve", Decimal(parser.pe_nt_headers->OptionalHeader.SizeOfStackReserve));
+    PrintTableRow2("Size of uninitialized data", Decimal(parser.pe_nt_headers->OptionalHeader.SizeOfUninitializedData));
     PrintTableRow2("Subsystem", Hex(parser.pe_nt_headers->OptionalHeader.Subsystem));
     PrintTableRow2("Win32 version value", Hex(parser.pe_nt_headers->OptionalHeader.Win32VersionValue));
     EndPEFieldTable();
@@ -130,22 +122,70 @@ void RenderOptionalHeaderTable(PEParser &parser)
 
 void RenderSectionHeadersTable(PEParser &parser)
 {
-    ImGui::Text("Section Headers");
+    ImGuiTableFlags flags =
+        ImGuiTableFlags_Borders |
+        ImGuiTableFlags_RowBg |
+        ImGuiTableFlags_Resizable |
+        ImGuiTableFlags_SizingStretchProp |
+        ImGuiTableFlags_ScrollY;
+
+    ImGui::BeginTable("SectionHeadersTable", 8, flags, ImVec2(0, 0));
+
+    ImGui::TableSetupColumn("Characteristics", ImGuiTableColumnFlags_WidthFixed, 180.0f);
+    ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthFixed, 90.0f);
+    ImGui::TableSetupColumn("Linenumbers count", ImGuiTableColumnFlags_WidthFixed, 140.0f);
+    ImGui::TableSetupColumn("Relocations count", ImGuiTableColumnFlags_WidthFixed, 140.0f);
+    ImGui::TableSetupColumn("Raw data pointer", ImGuiTableColumnFlags_WidthFixed, 160.0f);
+    ImGui::TableSetupColumn("Relocations pointer", ImGuiTableColumnFlags_WidthFixed, 160.0f);
+    ImGui::TableSetupColumn("Size of raw data", ImGuiTableColumnFlags_WidthFixed, 160.0f);
+    ImGui::TableSetupColumn("Virtual address", ImGuiTableColumnFlags_WidthFixed, 160.0f);
+
+    ImGui::TableHeadersRow();
+
+    for (size_t i = 0; parser.pe_section_headers[i].Characteristics != 0; i++)
+    {
+        ImGui::TableNextRow();
+        ImGui::TableNextColumn();
+        ImGui::Text(Hex(parser.pe_section_headers[i].Characteristics));
+        ImGui::TableNextColumn();
+        ImGui::Text((char *)(parser.pe_section_headers[i].Name));
+        ImGui::TableNextColumn();
+        ImGui::Text(Decimal(parser.pe_section_headers[i].NumberOfLinenumbers));
+        ImGui::TableNextColumn();
+        ImGui::Text(Decimal(parser.pe_section_headers[i].NumberOfRelocations));
+        ImGui::TableNextColumn();
+        ImGui::Text(Hex(parser.pe_section_headers[i].PointerToRawData));
+        ImGui::TableNextColumn();
+        ImGui::Text(Hex(parser.pe_section_headers[i].PointerToRelocations));
+        ImGui::TableNextColumn();
+        ImGui::Text(Decimal(parser.pe_section_headers[i].SizeOfRawData));
+        ImGui::TableNextColumn();
+        ImGui::Text(Hex(parser.pe_section_headers[i].VirtualAddress));
+    }
+
+    EndPEFieldTable();
 }
 
 void RenderImportTable(PEParser &parser)
 {
-    ImGui::Text("Import table");
+    ImGuiTableFlags flags =
+        ImGuiTableFlags_Borders |
+        ImGuiTableFlags_RowBg |
+        ImGuiTableFlags_Resizable |
+        ImGuiTableFlags_SizingStretchProp |
+        ImGuiTableFlags_ScrollY;
+
+    ImGui::BeginTable("ImportTable", 2, flags, ImVec2(0, 0));
+
+    ImGui::EndTable();
 }
 
 void RenderResourcesTable(PEParser &parser)
 {
-    ImGui::Text("Resources table");
 }
 
 void RenderRelocationsTable(PEParser &parser)
 {
-    ImGui::Text("Relocations table");
 }
 
 static void RenderSelectedTable(Window selected_window, PEParser &parser)
@@ -214,6 +254,7 @@ void RenderLoop(PEParser &parser)
 
             if (ImGui::MenuItem("Exit"))
             {
+                PostQuitMessage(0);
             }
 
             ImGui::EndMenu();
