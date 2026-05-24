@@ -1,9 +1,8 @@
 #include "Gui.h"
 
-std::string OpenExeFileDialog()
+std::string OpenExeFileDialog(char* file_name)
 {
     OPENFILENAMEA ofn{};
-    char file_name[MAX_PATH] = "";
 
     ofn.lStructSize = sizeof(ofn);
     ofn.hwndOwner = nullptr;
@@ -100,6 +99,11 @@ void RenderGeneralTable(PEParser &parser)
     BeginPEFieldTable("General", 2);
     PrintTableRow2("Is 64 bit", (char *)(parser.is_64bit ? "true" : "false"));
     PrintTableRow2("File path", parser.path);
+    ImGui::TableNextRow();
+    ImGui::TableNextColumn();
+    ImGui::Text("MD5 hash");
+    ImGui::TableNextColumn();
+    ImGui::Text(parser.md5hash.c_str());
     EndPEFieldTable();
 }
 
@@ -288,9 +292,7 @@ void RenderImportTable(PEParser &parser)
         ImGui::TableNextRow();
         ImGui::TableSetColumnIndex(0);
 
-        ImGuiTreeNodeFlags tree_flags =
-            ImGuiTreeNodeFlags_SpanFullWidth |
-            ImGuiTreeNodeFlags_DefaultOpen;
+        ImGuiTreeNodeFlags tree_flags = ImGuiTreeNodeFlags_SpanFullWidth;
 
         bool open = ImGui::TreeNodeEx(
             (void *)(intptr_t)i,
@@ -377,9 +379,9 @@ void RenderLoop(PEParser &parser)
         {
             if (ImGui::MenuItem("Open"))
             {
-                std::string file_name = OpenExeFileDialog();
+                OpenExeFileDialog(pe_file_buffer);
 
-                DWORD parsing_res = parser.from_disk((char*)(file_name.c_str()));
+                DWORD parsing_res = parser.from_disk(pe_file_buffer);
 
                 if (parsing_res != PE_FILE_SUCCESS)
                 {

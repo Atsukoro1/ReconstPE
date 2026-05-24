@@ -5,6 +5,7 @@ PEParser::PEParser()
 	this->parsed = false;
 	this->raw_pe_data = nullptr;
 	this->path = "";
+	this->md5hash = "";
 
 	this->pe_dos_header = nullptr;
 	this->pe_nt_headers = nullptr;
@@ -200,6 +201,8 @@ DWORD PEParser::parse_reloc_entries()
 
 DWORD PEParser::parse()
 {
+	this->md5hash = QuickDigest5::fileToHash(this->path);
+
 	this->pe_dos_header = (IMAGE_DOS_HEADER*)this->raw_pe_data;
 	if (this->pe_dos_header->e_magic != IMAGE_DOS_SIGNATURE)
 		return PE_FILE_INVALID_DOS_HEADER;

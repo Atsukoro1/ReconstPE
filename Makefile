@@ -3,8 +3,7 @@ CXX := g++
 CXXFLAGS := -std=c++20 -Wall -Wextra -mwindows \
 	-Iexternal/imgui \
 	-Iexternal/imgui/backends \
-	-Iexternal/phnt/include \
-	-Iexternal/compat
+	-Iexternal/QuickDigest5/include
 
 LIBS := \
 	-ld3d11 \
@@ -27,7 +26,8 @@ SRC := \
 	external/imgui/imgui_tables.cpp \
 	external/imgui/imgui_widgets.cpp \
 	external/imgui/backends/imgui_impl_win32.cpp \
-	external/imgui/backends/imgui_impl_dx11.cpp
+	external/imgui/backends/imgui_impl_dx11.cpp \
+	external/QuickDigest5/src/quickdigest5.cpp
 
 OUT := app.exe
 

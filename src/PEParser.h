@@ -8,6 +8,8 @@
 #include <fileapi.h>
 #include <WinBase.h>
 
+#include "quickdigest5.hpp"
+
 ///
 /// File parsing status codes
 /// 
@@ -56,6 +58,7 @@ class PEParser
 public:	
 	bool parsed;
 	bool is_64bit;
+	std::string md5hash;
 	char* path;
 
 	PIMAGE_DOS_HEADER pe_dos_header;
