@@ -54,7 +54,10 @@ struct RelocBlock {
 class PEParser
 {
 public:	
+	bool parsed;
 	bool is_64bit;
+	char* path;
+
 	PIMAGE_DOS_HEADER pe_dos_header;
 	PIMAGE_NT_HEADERS pe_nt_headers;
 	PIMAGE_SECTION_HEADER pe_section_headers;

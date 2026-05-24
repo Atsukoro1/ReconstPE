@@ -2,7 +2,9 @@
 
 PEParser::PEParser()
 {
+	this->parsed = false;
 	this->raw_pe_data = nullptr;
+	this->path = "";
 
 	this->pe_dos_header = nullptr;
 	this->pe_nt_headers = nullptr;
@@ -31,6 +33,8 @@ DWORD PEParser::from_bytes(char* bytes)
 
 DWORD PEParser::from_disk(char* path)
 {
+	this->path = path;
+	
 	OFSTRUCT pe_file_stat{};
 	pe_file_stat.cBytes = sizeof(pe_file_stat);
 
@@ -213,6 +217,8 @@ DWORD PEParser::parse()
 	this->parse_import_entries();
 	this->parse_resource_entries();
 	this->parse_reloc_entries();
+
+	this->parsed = true;
 
 	return PE_FILE_SUCCESS;
 }

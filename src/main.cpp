@@ -28,6 +28,15 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(
     WPARAM wParam,
     LPARAM lParam);
 
+ImGuiWindowFlags flags =
+    ImGuiWindowFlags_NoTitleBar |
+    ImGuiWindowFlags_NoResize |
+    ImGuiWindowFlags_NoMove |
+    ImGuiWindowFlags_NoCollapse |
+    ImGuiWindowFlags_NoBringToFrontOnFocus |
+    ImGuiWindowFlags_NoNavFocus |
+    ImGuiWindowFlags_MenuBar;
+
 LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 int main()
@@ -84,6 +93,8 @@ int main()
 
     bool done = false;
 
+    PEParser parser = PEParser();
+
     while (!done)
     {
         MSG msg;
@@ -103,9 +114,15 @@ int main()
         ImGui_ImplDX11_NewFrame();
         ImGui_ImplWin32_NewFrame();
         ImGui::NewFrame();
-        ImGui::Begin("ReconstPE");
-        
-        RenderLoop();
+
+        ImGuiViewport *viewport = ImGui::GetMainViewport();
+
+        ImGui::SetNextWindowPos(viewport->WorkPos);
+        ImGui::SetNextWindowSize(viewport->WorkSize);
+
+        ImGui::Begin("ReconstPE", nullptr, flags);
+
+        RenderLoop(parser);
 
         ImGui::End();
 
