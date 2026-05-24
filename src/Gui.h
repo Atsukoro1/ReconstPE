@@ -2,6 +2,7 @@
 
 #include "imgui.h"
 #include "PEParser.h"
+#include "Formatting.h"
 
 enum Window 
 {

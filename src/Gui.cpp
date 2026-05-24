@@ -1,30 +1,5 @@
 #include "Gui.h"
 
-template <typename T>
-char *Hex(T value)
-{
-    static thread_local char buffer[32];
-
-    if constexpr (sizeof(T) <= 1)
-    {
-        std::snprintf(buffer, sizeof(buffer), "0x%02X", static_cast<unsigned int>(value));
-    }
-    else if constexpr (sizeof(T) <= 2)
-    {
-        std::snprintf(buffer, sizeof(buffer), "0x%04X", static_cast<unsigned int>(value));
-    }
-    else if constexpr (sizeof(T) <= 4)
-    {
-        std::snprintf(buffer, sizeof(buffer), "0x%08X", static_cast<unsigned int>(value));
-    }
-    else
-    {
-        std::snprintf(buffer, sizeof(buffer), "0x%016llX", static_cast<unsigned long long>(value));
-    }
-
-    return buffer;
-}
-
 static void SidebarItem(const char *label, Window page, Window &selected_window)
 {
     if (ImGui::Selectable(label, selected_window == page))
@@ -42,17 +17,46 @@ void PrintTableRow2(char *key, char *value)
     ImGui::Text(value);
 }
 
+static bool BeginPEFieldTable(const char* id)
+{
+    ImGuiTableFlags flags =
+        ImGuiTableFlags_Borders |
+        ImGuiTableFlags_RowBg |
+        ImGuiTableFlags_Resizable |
+        ImGuiTableFlags_SizingStretchProp |
+        ImGuiTableFlags_ScrollY;
+
+    if (!ImGui::BeginTable(id, 2, flags, ImVec2(0, 0)))
+        return false;
+
+    ImGui::TableSetupColumn("Field", ImGuiTableColumnFlags_WidthFixed, 180.0f);
+    ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthFixed, 160.0f);
+
+    ImGui::TableHeadersRow();
+
+    return true;
+}
+
+static void EndPEFieldTable()
+{
+    ImGui::EndTable();
+}
+
 void RenderGeneralTable(PEParser &parser)
 {
-    ImGui::BeginTable("General", 2);
+    ImGui::Text("General");
+
+    BeginPEFieldTable("General");
     PrintTableRow2("Is 64 bit", (char *)(parser.is_64bit ? "true" : "false"));
     PrintTableRow2("File path", parser.path);
-    ImGui::EndTable();
+    EndPEFieldTable();
 }
 
 void RenderDOSHeaderTable(PEParser &parser)
 {
-    ImGui::BeginTable("DosHeaderTable", 2);
+    ImGui::Text("DOS Header");
+
+    BeginPEFieldTable("DosHeaderTable");
     PrintTableRow2("e_cblp", Hex(parser.pe_dos_header->e_cblp));
     PrintTableRow2("e_cp", Hex(parser.pe_dos_header->e_cp));
     PrintTableRow2("e_cparhdr", Hex(parser.pe_dos_header->e_cparhdr));
@@ -70,19 +74,58 @@ void RenderDOSHeaderTable(PEParser &parser)
     PrintTableRow2("e_ovno", Hex(parser.pe_dos_header->e_ovno));
     PrintTableRow2("e_sp", Hex(parser.pe_dos_header->e_sp));
     PrintTableRow2("e_ss", Hex(parser.pe_dos_header->e_ss));
-    ImGui::EndTable();
+    EndPEFieldTable();
 }
 
 void RenderFileHeaderTable(PEParser &parser)
 {
-    ImGui::BeginTable("FileHeaderTable", 2);
-    ImGui::EndTable();
+    ImGui::Text("File Header");
+
+    BeginPEFieldTable("FileHeaderTable");
+    PrintTableRow2("Characteristics", Hex(parser.pe_nt_headers->FileHeader.Characteristics));
+    PrintTableRow2("Machine", Hex(parser.pe_nt_headers->FileHeader.Machine));
+    PrintTableRow2("Number of sections", Hex(parser.pe_nt_headers->FileHeader.NumberOfSections));
+    PrintTableRow2("Number of symbols", Hex(parser.pe_nt_headers->FileHeader.NumberOfSymbols));
+    PrintTableRow2("Pointer to symbol table", Hex(parser.pe_nt_headers->FileHeader.PointerToSymbolTable));
+    PrintTableRow2("Time Date stamp", Hex(parser.pe_nt_headers->FileHeader.TimeDateStamp));
+    EndPEFieldTable();
 }
 
 void RenderOptionalHeaderTable(PEParser &parser)
 {
-    ImGui::BeginTable("OptionalHeaderTable", 2);
-    ImGui::EndTable();
+    ImGui::Text("Optional Header");
+
+    BeginPEFieldTable("OptionalHeaderTable");
+    PrintTableRow2("Entry point address", Hex(parser.pe_nt_headers->OptionalHeader.AddressOfEntryPoint));
+    PrintTableRow2("Base of code", Hex(parser.pe_nt_headers->OptionalHeader.BaseOfCode));
+    PrintTableRow2("Checksum", Hex(parser.pe_nt_headers->OptionalHeader.CheckSum));
+    PrintTableRow2("DLL characteristics", Hex(parser.pe_nt_headers->OptionalHeader.DllCharacteristics));
+    PrintTableRow2("File alignment", Hex(parser.pe_nt_headers->OptionalHeader.FileAlignment));
+    PrintTableRow2("Image base", Hex(parser.pe_nt_headers->OptionalHeader.ImageBase));
+    PrintTableRow2("Loader flags", Hex(parser.pe_nt_headers->OptionalHeader.LoaderFlags));
+    PrintTableRow2("Magic", Hex(parser.pe_nt_headers->OptionalHeader.Magic));
+    PrintTableRow2("Major image version", Hex(parser.pe_nt_headers->OptionalHeader.MajorImageVersion));
+    PrintTableRow2("Major linker version", Hex(parser.pe_nt_headers->OptionalHeader.MajorLinkerVersion));
+    PrintTableRow2("Major OS version", Hex(parser.pe_nt_headers->OptionalHeader.MajorOperatingSystemVersion));
+    PrintTableRow2("Major subsystem version", Hex(parser.pe_nt_headers->OptionalHeader.MajorSubsystemVersion));
+    PrintTableRow2("Miner image version", Hex(parser.pe_nt_headers->OptionalHeader.MinorImageVersion));
+    PrintTableRow2("Minor linker version", Hex(parser.pe_nt_headers->OptionalHeader.MinorLinkerVersion));
+    PrintTableRow2("Minor operating system version", Hex(parser.pe_nt_headers->OptionalHeader.MinorOperatingSystemVersion));
+    PrintTableRow2("Minor subsystem version", Hex(parser.pe_nt_headers->OptionalHeader.MinorSubsystemVersion));
+    PrintTableRow2("Number of RVA and sizes", Hex(parser.pe_nt_headers->OptionalHeader.NumberOfRvaAndSizes));
+    PrintTableRow2("Section alignment", Hex(parser.pe_nt_headers->OptionalHeader.SectionAlignment));
+    PrintTableRow2("Size of code", Hex(parser.pe_nt_headers->OptionalHeader.SizeOfCode));
+    PrintTableRow2("Size of headers", Hex(parser.pe_nt_headers->OptionalHeader.SizeOfHeaders));
+    PrintTableRow2("Size of heap commit", Hex(parser.pe_nt_headers->OptionalHeader.SizeOfHeapCommit));
+    PrintTableRow2("Size of heap reserve", Hex(parser.pe_nt_headers->OptionalHeader.SizeOfHeapReserve));
+    PrintTableRow2("Size of image", Hex(parser.pe_nt_headers->OptionalHeader.SizeOfImage));
+    PrintTableRow2("Size of initialized data", Hex(parser.pe_nt_headers->OptionalHeader.SizeOfInitializedData));
+    PrintTableRow2("Size of stack commit", Hex(parser.pe_nt_headers->OptionalHeader.SizeOfStackCommit));
+    PrintTableRow2("Size of stack reserve", Hex(parser.pe_nt_headers->OptionalHeader.SizeOfStackReserve));
+    PrintTableRow2("Size of uninitialized data", Hex(parser.pe_nt_headers->OptionalHeader.SizeOfUninitializedData));
+    PrintTableRow2("Subsystem", Hex(parser.pe_nt_headers->OptionalHeader.Subsystem));
+    PrintTableRow2("Win32 version value", Hex(parser.pe_nt_headers->OptionalHeader.Win32VersionValue));
+    EndPEFieldTable();
 }
 
 void RenderSectionHeadersTable(PEParser &parser)
