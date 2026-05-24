@@ -1,10 +1,63 @@
 #include "Gui.h"
 
+std::string OpenExeFileDialog()
+{
+    OPENFILENAMEA ofn{};
+    char file_name[MAX_PATH] = "";
+
+    ofn.lStructSize = sizeof(ofn);
+    ofn.hwndOwner = nullptr;
+    ofn.lpstrFile = file_name;
+    ofn.nMaxFile = MAX_PATH;
+    ofn.lpstrFilter = "Executable files (*.exe)\0";
+    ofn.nFilterIndex = 1;
+    ofn.lpstrTitle = "Open file";
+    ofn.Flags =
+        OFN_PATHMUSTEXIST |
+        OFN_FILEMUSTEXIST |
+        OFN_NOCHANGEDIR |
+        OFN_EXPLORER;
+
+    if (GetOpenFileNameA(&ofn))
+    {
+        return file_name;
+    }
+
+    return {};
+}
+
 static void SidebarItem(const char *label, Window page, Window &selected_window)
 {
     if (ImGui::Selectable(label, selected_window == page))
     {
         selected_window = page;
+    }
+}
+
+static void CenterText(const char *text)
+{
+    float window_width = ImGui::GetWindowSize().x;
+    float text_width = ImGui::CalcTextSize(text).x;
+
+    ImGui::SetCursorPosX((window_width - text_width) * 0.5f);
+    ImGui::TextUnformatted(text);
+}
+
+void PrintIntro()
+{
+    const char *lines[] =
+        {
+            "-------------------------------------",
+            " _____     _         _____ _____ ",
+            "| __  |___| |___ ___|  _  |   __|",
+            "|    -| -_| | . |  _|   __|   __|",
+            "|__|__|___|_|___|___|__|  |_____|",
+            "         Made by Atsukoro         ",
+            "-------------------------------------"};
+
+    for (const char *line : lines)
+    {
+        CenterText(line);
     }
 }
 
@@ -166,6 +219,52 @@ void RenderSectionHeadersTable(PEParser &parser)
     EndPEFieldTable();
 }
 
+void RenderThunkTable(ImportedLibrary &library)
+{
+    ImGuiTableFlags flags =
+        ImGuiTableFlags_BordersInnerV |
+        ImGuiTableFlags_RowBg |
+        ImGuiTableFlags_Resizable |
+        ImGuiTableFlags_SizingStretchProp;
+
+    std::string table_id = "ThunkTable_" + library.dll_name;
+
+    if (!ImGui::BeginTable(table_id.c_str(), 5, flags))
+        return;
+
+    ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthStretch);
+    ImGui::TableSetupColumn("Hint", ImGuiTableColumnFlags_WidthFixed, 120.0f);
+    ImGui::TableSetupColumn("RVA", ImGuiTableColumnFlags_WidthFixed, 140.0f);
+
+    ImGui::TableHeadersRow();
+
+    for (size_t i = 0; i < library.functions.size(); i++)
+    {
+        const auto &thunk = library.functions[i];
+
+        ImGui::TableNextRow();
+        ImGui::TableSetColumnIndex(0);
+
+        if (thunk.is_ordinal)
+            ImGui::TextDisabled("<ordinal import>");
+        else
+            ImGui::Text(thunk.name.c_str());
+
+        ImGui::TableSetColumnIndex(1);
+
+        if (thunk.is_ordinal)
+            ImGui::TextDisabled("-");
+        else
+            ImGui::Text(Hex(thunk.hint));
+
+        ImGui::TableSetColumnIndex(2);
+
+        ImGui::Text(Hex(thunk.address));
+    }
+
+    ImGui::EndTable();
+}
+
 void RenderImportTable(PEParser &parser)
 {
     ImGuiTableFlags flags =
@@ -176,6 +275,43 @@ void RenderImportTable(PEParser &parser)
         ImGuiTableFlags_ScrollY;
 
     ImGui::BeginTable("ImportTable", 2, flags, ImVec2(0, 0));
+
+    ImGui::TableSetupColumn("DLL name", ImGuiTableColumnFlags_WidthStretch);
+    ImGui::TableSetupColumn("address", ImGuiTableColumnFlags_WidthFixed, 140.0f);
+
+    ImGui::TableHeadersRow();
+
+    for (int i = 0; i < parser.pe_imports.size(); i++)
+    {
+        auto &import = parser.pe_imports[i];
+
+        ImGui::TableNextRow();
+        ImGui::TableSetColumnIndex(0);
+
+        ImGuiTreeNodeFlags tree_flags =
+            ImGuiTreeNodeFlags_SpanFullWidth |
+            ImGuiTreeNodeFlags_DefaultOpen;
+
+        bool open = ImGui::TreeNodeEx(
+            (void *)(intptr_t)i,
+            tree_flags,
+            "%s",
+            import.dll_name.c_str());
+
+        if (open)
+        {
+            ImGui::TableNextRow();
+            ImGui::TableSetColumnIndex(0);
+
+            ImGui::Indent(20.0f);
+
+            RenderThunkTable(import);
+
+            ImGui::Unindent(20.0f);
+
+            ImGui::TreePop();
+        }
+    }
 
     ImGui::EndTable();
 }
@@ -241,6 +377,14 @@ void RenderLoop(PEParser &parser)
         {
             if (ImGui::MenuItem("Open"))
             {
+                std::string file_name = OpenExeFileDialog();
+
+                DWORD parsing_res = parser.from_disk((char*)(file_name.c_str()));
+
+                if (parsing_res != PE_FILE_SUCCESS)
+                {
+                    std::cerr << "[!] Failed to parse, error code: " << parsing_res << std::endl;
+                }
             }
 
             ImGui::Separator();
@@ -265,18 +409,7 @@ void RenderLoop(PEParser &parser)
 
     if (!parser.parsed)
     {
-        ImGui::InputText("Location of the file", pe_file_buffer, sizeof(pe_file_buffer));
-
-        if (ImGui::Button("Parse PE"))
-        {
-            DWORD parsing_res = parser.from_disk(pe_file_buffer);
-
-            if (parsing_res != PE_FILE_SUCCESS)
-            {
-                std::cerr << "[!] Failed to parse, error code: " << parsing_res << std::endl;
-            }
-        }
-
+        PrintIntro();
         return;
     }
 

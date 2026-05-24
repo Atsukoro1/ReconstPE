@@ -121,6 +121,7 @@ int main()
         ImGui::SetNextWindowSize(viewport->WorkSize);
 
         ImGui::Begin("ReconstPE", nullptr, flags);
+        ImGui::SetWindowFontScale(ImGui::GetStyle().FontScaleMain + 0.20);
 
         RenderLoop(parser);
 
