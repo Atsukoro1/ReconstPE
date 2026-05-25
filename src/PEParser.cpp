@@ -4,8 +4,10 @@ PEParser::PEParser()
 {
 	this->parsed = false;
 	this->raw_pe_data = nullptr;
+	this->raw_pe_data_size = 0;
 	this->path = "";
 	this->md5hash = "";
+	this->strings = {};
 
 	this->pe_dos_header = nullptr;
 	this->pe_nt_headers = nullptr;
@@ -69,6 +71,7 @@ DWORD PEParser::from_disk(char* path)
 		return PE_FILE_READ_ERROR;
 
 	this->raw_pe_data = pe_file_buffer;
+	this->raw_pe_data_size = pe_file_size_quadpart;
 
 	return this->parse();
 }
@@ -199,6 +202,41 @@ DWORD PEParser::parse_reloc_entries()
     return PE_FILE_SUCCESS;
 }
 
+DWORD PEParser::extract_strings()
+{
+    std::string current_phrase;
+
+    constexpr size_t MIN_STRING_LENGTH = 4;
+
+    this->strings.clear();
+
+    for (DWORD64 current_index = 0; current_index < this->raw_pe_data_size; current_index++)
+    {
+        unsigned char current_char =
+            static_cast<unsigned char>(this->raw_pe_data[current_index]);
+
+        if (std::isprint(current_char))
+        {
+            current_phrase += static_cast<char>(current_char);
+            continue;
+        }
+
+        if (current_phrase.length() >= MIN_STRING_LENGTH)
+        {
+            this->strings.push_back(current_phrase);
+        }
+
+        current_phrase.clear();
+    }
+
+    if (current_phrase.length() >= MIN_STRING_LENGTH)
+    {
+        this->strings.push_back(current_phrase);
+    }
+
+    return PE_FILE_SUCCESS;
+}
+
 DWORD PEParser::parse()
 {
 	this->md5hash = QuickDigest5::fileToHash(this->path);
@@ -220,6 +258,8 @@ DWORD PEParser::parse()
 	this->parse_import_entries();
 	this->parse_resource_entries();
 	this->parse_reloc_entries();
+
+	this->extract_strings();
 
 	this->parsed = true;
 

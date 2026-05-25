@@ -7,7 +7,7 @@
 #include "imgui_impl_dx11.h"
 
 #include "PEParser.h"
-#include "Gui.h"
+#include "gui/Gui.h"
 
 #pragma comment(lib, "d3d11.lib")
 #pragma comment(lib, "ntdll.lib")

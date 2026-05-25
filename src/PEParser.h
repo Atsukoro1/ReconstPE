@@ -7,6 +7,7 @@
 #include <windef.h>
 #include <fileapi.h>
 #include <WinBase.h>
+#include <cctype>
 
 #include "quickdigest5.hpp"
 
@@ -60,6 +61,7 @@ public:
 	bool is_64bit;
 	std::string md5hash;
 	char* path;
+	std::vector<std::string> strings;
 
 	PIMAGE_DOS_HEADER pe_dos_header;
 	PIMAGE_NT_HEADERS pe_nt_headers;
@@ -90,6 +92,7 @@ private:
 
 protected:
 	char* raw_pe_data;
+	DWORD64 raw_pe_data_size;
 
 	DWORD parse();
 
@@ -108,4 +111,9 @@ protected:
 	///
 	DWORD rva_to_offset(DWORD rva);
 	template <typename T> T* rva_to_ptr(DWORD rva);
+
+	///
+	///	Extracting strings from the binary
+	///
+	DWORD extract_strings();
 };

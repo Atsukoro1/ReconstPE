@@ -18,9 +18,8 @@ LIBS := \
 	-ldwmapi
 
 SRC := \
-	src/main.cpp \
-	src/PEParser.cpp \
-	src/Gui.cpp \
+	src/*.cpp \
+	src/gui/*.cpp \
 	external/imgui/imgui.cpp \
 	external/imgui/imgui_draw.cpp \
 	external/imgui/imgui_tables.cpp \
